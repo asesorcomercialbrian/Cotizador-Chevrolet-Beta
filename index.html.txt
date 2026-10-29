@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador de Vehículos Usados (2000 - 2026)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-light">
+
+    <div class="container py-5">
+        <header class="text-center mb-5">
+            <h1 class="fw-bold text-primary">Cotizador de Vehículos Usados</h1>
+            <p class="text-muted">Valores de mercado y toma de concesionarios (2000 - 2026)</p>
+        </header>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm p-4 mb-4">
+                    <form id="cotizador-form">
+                        <!-- Marca -->
+                        <div class="mb-3">
+                            <label for="marca" class="form-label fw-bold">Marca</label>
+                            <select id="marca" class="form-select" required>
+                                <option value="">Seleccione una marca...</option>
+                            </select>
+                        </div>
+
+                        <!-- Modelo -->
+                        <div class="mb-3">
+                            <label for="modelo" class="form-label fw-bold">Modelo</label>
+                            <select id="modelo" class="form-select" disabled required>
+                                <option value="">Seleccione primero una marca</option>
+                            </select>
+                        </div>
+
+                        <!-- Versión -->
+                        <div class="mb-3">
+                            <label for="version" class="form-label fw-bold">Versión / Equipamiento</label>
+                            <select id="version" class="form-select" disabled required>
+                                <option value="">Seleccione primero un modelo</option>
+                            </select>
+                        </div>
+
+                        <!-- Año (2000 - 2026) -->
+                        <div class="mb-3">
+                            <label for="anio" class="form-label fw-bold">Año de Fabricación</label>
+                            <select id="anio" class="form-select" disabled required>
+                                <option value="">Seleccione primero una versión</option>
+                            </select>
+                        </div>
+
+                        <!-- Kilometraje -->
+                        <div class="mb-3">
+                            <label for="km" class="form-label fw-bold">Kilometraje Actual (KM)</label>
+                            <input type="number" id="km" class="form-control" placeholder="Ej: 85000" min="0" max="1000000" required>
+                            <div class="form-text text-danger" id="km-aviso">⚠️ Unidades con más de 200.000 km tienen una rebaja extra del 5%.</div>
+                        </div>
+
+                        <!-- Descuento Concesionario -->
+                        <div class="mb-3">
+                            <label for="descuento" class="form-label fw-bold">Descuento Toma Concesionario (%)</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="range" class="form-range" id="descuento" min="10" max="15" step="0.5" value="12" oninput="document.getElementById('desc-val').value = this.value + '%'">
+                                <output id="desc-val" class="fw-bold text-primary fs-5">12%</output>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 mt-2 fw-bold" id="btn-calcular">Calcular Cotización</button>
+                    </form>
+                </div>
+
+                <!-- Tarjeta de Resultados -->
+                <div id="resultado" class="d-none">
+                    <div class="card border-primary shadow text-center p-4">
+                        <h4 class="text-dark fw-bold mb-1" id="res-vehiculo">Vehículo</h4>
+                        <p class="text-muted small mb-3" id="res-detalles">Año | KM</p>
+                        <hr>
+                        <div class="row g-3">
+                            <div class="col-12 col-sm-6">
+                                <div class="p-3 bg-light rounded border">
+                                    <span class="d-block text-muted small fw-bold text-uppercase">Valor Reventa (Mercado)</span>
+                                    <strong class="h3 text-success d-block mt-2" id="val-reventa">$0</strong>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <div class="p-3 bg-light rounded border">
+                                    <span class="d-block text-muted small fw-bold text-uppercase">Valor Concesionario</span>
+                                    <strong class="h3 text-primary d-block mt-2" id="val-concesionario">$0</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-3 mb-0" id="res-extra-msg">* Valores de referencia oficiales de mercado.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

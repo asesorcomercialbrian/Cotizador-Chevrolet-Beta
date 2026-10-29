@@ -1,0 +1,104 @@
+const vehiculosData = [
+  {
+    marca: "Toyota",
+    modelos: [
+      {
+        nombre: "Corolla",
+        versiones: [
+          {
+            nombre: "1.8 XEI MT / CVT",
+            precios: {
+              2026: 36000000, 2025: 33000000, 2024: 30000000, 2023: 27000000, 2022: 24500000,
+              2021: 22000000, 2020: 19800000, 2018: 16500000, 2015: 12500000, 2010: 8500000, 2005: 5800000, 2000: 3900000
+            }
+          },
+          {
+            nombre: "2.0 SEG CVT",
+            precios: {
+              2026: 42000000, 2025: 38500000, 2024: 35000000, 2023: 31500000, 2022: 28500000,
+              2021: 25000000, 2020: 22500000, 2018: 18500000, 2015: 14000000, 2010: 9500000
+            }
+          }
+        ]
+      },
+      {
+        nombre: "Hilux",
+        versiones: [
+          {
+            nombre: "2.8 TDI SRV 4x4 MT/AT",
+            precios: {
+              2026: 60000000, 2025: 54000000, 2024: 48000000, 2023: 43000000, 2022: 38000000,
+              2021: 34000000, 2020: 30500000, 2015: 22000000, 2010: 16000000, 2005: 11500000, 2000: 8200000
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    marca: "Volkswagen",
+    modelos: [
+      {
+        nombre: "Gol / Gol Trend",
+        versiones: [
+          {
+            nombre: "1.6 Trendline / Power 5P",
+            precios: {
+              2022: 16500000, 2021: 14800000, 2020: 13200000, 2018: 11000000, 2015: 8800000,
+              2010: 6400000, 2005: 4900000, 2000: 3600000
+            }
+          }
+        ]
+      },
+      {
+        nombre: "Amarok",
+        versiones: [
+          {
+            nombre: "2.0 TDI Comfortline / Highline 4x4",
+            precios: {
+              2026: 55000000, 2025: 49000000, 2024: 44000000, 2023: 39000000, 2022: 35000000,
+              2020: 28000000, 2015: 19500000, 2011: 14000000
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    marca: "Ford",
+    modelos: [
+      {
+        nombre: "Ranger",
+        versiones: [
+          {
+            nombre: "3.2 / 2.0 TDI XLS / Limited 4x4",
+            precios: {
+              2026: 58000000, 2025: 52000000, 2024: 46000000, 2022: 36000000, 2020: 29500000,
+              2015: 20500000, 2010: 14500000, 2005: 10200000, 2000: 7500000
+            }
+          }
+        ]
+      }
+    ]
+  }
+];
+
+// Función utilitaria para interpolar precios si falta algún año intermedio
+function obtenerPrecioBase(preciosObj, anio) {
+  if (preciosObj[anio]) return preciosObj[anio];
+
+  const aniosDisponibles = Object.keys(preciosObj).map(Number).sort((a, b) => b - a);
+  const masReciente = aniosDisponibles[0];
+  const masAntiguo = aniosDisponibles[aniosDisponibles.length - 1];
+
+  if (anio > masReciente) {
+    return Math.round(preciosObj[masReciente] * Math.pow(1.08, anio - masReciente));
+  } else if (anio < masAntiguo) {
+    return Math.round(preciosObj[masAntiguo] * Math.pow(0.91, masAntiguo - anio));
+  } else {
+    const anioSuperior = aniosDisponibles.find(a => a > anio);
+    const anioInferior = [...aniosDisponibles].reverse().find(a => a < anio);
+    const ratio = (anio - anioInferior) / (anioSuperior - anioInferior);
+    return Math.round(preciosObj[anioInferior] + ratio * (preciosObj[anioSuperior] - preciosObj[anioInferior]));
+  }
+}

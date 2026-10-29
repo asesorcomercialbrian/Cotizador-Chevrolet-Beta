@@ -1,0 +1,119 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const selectMarca = document.getElementById('marca');
+    const selectModelo = document.getElementById('modelo');
+    const selectVersion = document.getElementById('version');
+    const selectAnio = document.getElementById('anio');
+    const inputKm = document.getElementById('km');
+    const form = document.getElementById('cotizador-form');
+    const divResultado = document.getElementById('resultado');
+
+    const ANIO_ACTUAL = 2026;
+
+    // 1. Cargar Marcas
+    vehiculosData.forEach((item, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = item.marca;
+        selectMarca.appendChild(option);
+    });
+
+    // 2. Evento Marca -> Cargar Modelos
+    selectMarca.addEventListener('change', (e) => {
+        resetSelect(selectModelo, 'Seleccione un modelo...');
+        resetSelect(selectVersion, 'Seleccione primero un modelo');
+        resetSelect(selectAnio, 'Seleccione primero una versión');
+
+        const marcaIdx = e.target.value;
+        if (marcaIdx !== "") {
+            vehiculosData[marcaIdx].modelos.forEach((mod, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = mod.nombre;
+                selectModelo.appendChild(opt);
+            });
+            selectModelo.disabled = false;
+        }
+    });
+
+    // 3. Evento Modelo -> Cargar Versiones
+    selectModelo.addEventListener('change', (e) => {
+        resetSelect(selectVersion, 'Seleccione una versión...');
+        resetSelect(selectAnio, 'Seleccione primero una versión');
+
+        const marcaIdx = selectMarca.value;
+        const modeloIdx = e.target.value;
+
+        if (modeloIdx !== "") {
+            vehiculosData[marcaIdx].modelos[modeloIdx].versiones.forEach((ver, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = ver.nombre;
+                selectVersion.appendChild(opt);
+            });
+            selectVersion.disabled = false;
+        }
+    });
+
+    // 4. Evento Versión -> Cargar Años (2000 a 2026)
+    selectVersion.addEventListener('change', (e) => {
+        resetSelect(selectAnio, 'Seleccione el año...');
+        
+        if (e.target.value !== "") {
+            for (let anio = ANIO_ACTUAL; anio >= 2000; anio--) {
+                const opt = document.createElement('option');
+                opt.value = anio;
+                opt.textContent = anio === ANIO_ACTUAL ? `${anio} (0km / Nuevo)` : anio;
+                selectAnio.appendChild(opt);
+            }
+            selectAnio.disabled = false;
+        }
+    });
+
+    // Formateador de Moneda
+    const formatARS = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val);
+
+    function resetSelect(select, placeholder) {
+        select.innerHTML = `<option value="">${placeholder}</option>`;
+        select.disabled = true;
+    }
+
+    // 5. Cálculo y Submit
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const marcaIdx = selectMarca.value;
+        const modeloIdx = selectModelo.value;
+        const versionIdx = selectVersion.value;
+        const anio = parseInt(selectAnio.value);
+        const kmIngresados = parseInt(inputKm.value);
+        const porcDescuentoConcesionario = parseFloat(document.getElementById('descuento').value);
+
+        const versionObj = vehiculosData[marcaIdx].modelos[modeloIdx].versiones[versionIdx];
+        let valorMercado = obtenerPrecioBase(versionObj.precios, anio);
+
+        let mensajeExtra = "* Valores de referencia oficiales de mercado.";
+
+        // REGLA: Si supera los 200.000 km, baja un 5% extra en ambos valores
+        if (kmIngresados > 200000) {
+            valorMercado = valorMercado * 0.95;
+            mensajeExtra = "* Se aplicó una rebaja del 5% extra por superar los 200.000 km.";
+        }
+
+        // Valor concesionario: Aplicar únicamente el descuento elegido (10% a 15%) sobre el mercado actual
+        const valorConcesionario = valorMercado * (1 - (porcDescuentoConcesionario / 100));
+
+        // Nombres
+        const marcaNombre = vehiculosData[marcaIdx].marca;
+        const modeloNombre = vehiculosData[marcaIdx].modelos[modeloIdx].nombre;
+
+        // Renderizar
+        document.getElementById('res-vehiculo').textContent = `${marcaNombre} ${modeloNombre}`;
+        document.getElementById('res-detalles').textContent = `${versionObj.nombre} | Año: ${anio} | ${kmIngresados.toLocaleString('es-AR')} KM`;
+        document.getElementById('val-reventa').textContent = formatARS(Math.round(valorMercado));
+        document.getElementById('val-concesionario').textContent = formatARS(Math.round(valorConcesionario));
+        document.getElementById('res-extra-msg').textContent = mensajeExtra;
+
+        divResultado.classList.remove('d-none');
+        divResultado.scrollIntoView({ behavior: 'smooth' });
+    });
+});
